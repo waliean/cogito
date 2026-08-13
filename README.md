@@ -4,7 +4,7 @@
 
 **你思，它拓 —— 让 AI 展开你的思考，而不是代替它**
 
-<img src="assets/banner.webp" alt="Cogito — 你思，它拓" width="100%">
+<img src="assets/banner.png" alt="Cogito — 你思，它拓" width="100%">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
@@ -30,7 +30,7 @@ Cogito 把关系反了过来：
 
 ## 你会得到什么
 
-<img src="assets/features.webp" alt="Cogito — 三个核心结果" width="100%">
+<img src="assets/features.png" alt="Cogito — 三个核心结果" width="100%">
 
 1. **一棵可生长的知识树** —— 深入 / 发散 / 分支三种思考动作，把想法长成树；卡片与思维导图同源联动，一键纵览全貌。
 2. **把 AI 黑话讲成人话** —— 术语库把 CoT、RAG 这类江湖黑话沉淀成带定义的中文术语，全文高亮、悬停即解，**尤其利于初学者**。
