@@ -7,7 +7,7 @@ backend/uploads/
 *.log
 .DS_Store
 *.tsbuildinfo
-# .opencode/  # OpenCode 工作空间配置（需要保留以便 OpenCode 正常工作）
+.opencode/  # OpenCode 本地会话配置（含私人助手规则，不发布到公开仓库）
 
 release/
 
