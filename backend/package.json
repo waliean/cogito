@@ -1,0 +1,35 @@
+{
+  "name": "@cogito/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cogito/shared": "*",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.2.1",
+    "iconv-lite": "^0.7.3",
+    "multer": "^2.2.0",
+    "nanoid": "^3.3.17",
+    "openai": "^7.3.0",
+    "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.3",
+    "@types/iconv-lite": "^0.0.1",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^22.0.0",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.2.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.0.0"
+  }
+}

@@ -1,0 +1,30 @@
+﻿node_modules/
+dist/
+.env
+backend/data/
+backend/.test-data/
+backend/uploads/
+*.log
+.DS_Store
+*.tsbuildinfo
+# .opencode/  # OpenCode 工作空间配置（需要保留以便 OpenCode 正常工作）
+
+release/
+
+# Playwright MCP 测试快照与调试日志
+.playwright-mcp/
+
+# 无关的克隆项目（独立仓库）
+ai-coding-dictionary-zh/
+
+# 根目录调试散文件（截图 / 图标 base64 / 预览）
+/*.png
+/*.jpg
+/*.jpeg
+/icon_b64.txt
+/icon_b64_lines.txt
+/icon_preview.html
+
+# 运行时输出
+backend/stdout.txt
+backend/stderr.txt
