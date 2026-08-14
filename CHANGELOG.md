@@ -1,5 +1,18 @@
 ﻿# Changelog
 
+## [Unreleased] — i18n 国际化（中英双语）
+
+### 新增（国际化）
+- **中英双语**：基于 `react-i18next` + `i18next`，界面全面支持 中文 / English 切换；设置面板新增「语言」区块（跟随系统 / 中文 / English 三选一），切换即时生效、无需重启
+  - 语言偏好字段 `language: 'system' | 'zh' | 'en'`（默认 `system` = 跟随系统语言），持久化到后端 `PublicSettings`（db.json）
+- **Electron 主进程联动**：托盘菜单 / 窗口标题 / 错误弹窗 / 文件夹选择对话框等主进程文案一并 i18n，经 IPC 与渲染进程的语言偏好联动
+- **错误文案本地化**：`utils/errorMessages.ts` 的 14 个错误码接入 i18n；`E_AI_ERROR` 仍会追加后端英文详情（保持错误码契约）
+- **资源位置**：前端 `frontend/src/i18n/locales/{zh,en}.ts`；Electron 主进程独立资源 `electron/i18n.cjs`
+- **刻意不翻译**：AI 编码词典内容（`data/dictionary.ts`）、卡片/文档用户内容、AI prompts、后端英文错误消息（错误码契约稳定优先）
+
+### 测试
+- 后端 144 用例 + 前端 62 用例全绿；typecheck / build 通过；浏览器端到端验证中英切换即时生效
+
 ## [0.4.0] - 2026-08-11 — 导图 AI 扩展（分支建议 + 一键生成完整图）
 
 ### 新增（导图）

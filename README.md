@@ -15,6 +15,12 @@
 
 <div align="center">
 
+[English](README.en.md) &middot; 中文
+
+</div>
+
+<div align="center">
+
 [快速开始](#快速开始) &middot; [功能详解](#功能详解每一个功能解决什么痛点) &middot; [典型工作流](#典型工作流) &middot; [技术栈](#技术栈) &middot; [文档](#文档) &middot; [路线图](#路线图)
 
 </div>
@@ -275,6 +281,16 @@ CoT、RAG、上下文窗口、Token、前缀缓存……AI 的回答里到处是
 
 ---
 
+### 12. 中英双语（i18n）：界面一键切换，跟随系统
+
+**它是什么**：应用界面（设置面板、卡片操作、错误提示，以及桌面版托盘菜单 / 窗口标题等主进程文案）支持中文 / English 双语，默认「跟随系统」；在「设置 → 语言」三选一，切换即时生效并持久化，下次启动保持。
+
+**解决了什么痛点**：痛点「环境门槛」的延伸——语言偏好不应是安装时就必须做对的假设。让非中文用户也能零障碍上手，也让希望界面与文档语言一致的开发者省去折腾。
+
+**技术亮点**：基于 `react-i18next` + `i18next`；语言偏好 `system | zh | en` 存于后端 `PublicSettings`（db.json）；Electron 主进程文案经 IPC 与渲染进程联动；错误码文案本地化但保留英文错误码契约；AI 编码词典与用户生成内容**刻意不翻译**。
+
+---
+
 ## 快速开始
 
 ### 方式一：桌面版（推荐，非开发者友好）
@@ -290,7 +306,7 @@ CoT、RAG、上下文窗口、Token、前缀缓存……AI 的回答里到处是
 ```bash
 npm install        # Node 22+（npm workspaces：shared + backend + frontend）
 npm run dev        # 一键启动：后端 :3001 + 前端 :5173（Vite 自动代理 /api）
-npm test           # 全部测试：后端 144 用例 + 前端 55 用例
+npm test           # 全部测试：后端 144 用例 + 前端 62 用例
 npm run typecheck  # 全仓 TypeScript 类型检查
 npm run dist:win   # 打包 Windows 安装版 + 便携版（输出到 release/）
 ```
@@ -345,7 +361,7 @@ npm run dist:win   # 打包 Windows 安装版 + 便携版（输出到 release/�
 | AI | openai SDK（baseURL 指向 DeepSeek），JSON 模式、超时、重试、错误码映射 |
 | 文档 | multer 上传校验 + pdf-parse 提取 + iconv-lite（UTF-8/GBK）解码 |
 | 桌面 | Electron 43 + electron-builder（NSIS / 便携版） |
-| 测试 | Vitest（后端 144 用例 + 前端 55 用例），supertest + jsdom |
+| 测试 | Vitest（后端 144 用例 + 前端 62 用例），supertest + jsdom |
 | 仓库 | npm workspaces monorepo：`shared`（共享类型/常量）/ `backend` / `frontend` |
 
 ## 架构一览
@@ -374,7 +390,7 @@ npm run dist:win   # 打包 Windows 安装版 + 便携版（输出到 release/�
 ## 测试与质量
 
 - **后端 144 用例**：存储原子写/损坏恢复、卡片状态机与并发防重入、AI 重试与错误码映射、文档上传校验与 GBK 解码、全部 API 集成（X-API-Key 优先级、统一错误结构）；
-- **前端 55 用例**：五个异步 store（workspace / card / document / settings / term；ui 为同步视图状态）的流程测试、TermText 最长优先高亮匹配、dagre 布局确定性、API 客户端错误包装；
+- **前端 62 用例**：五个异步 store（workspace / card / document / settings / term；ui 为同步视图状态）的流程测试、TermText 最长优先高亮匹配、dagre 布局确定性、API 客户端错误包装；
 - 命令行：`npm test` 跑全量；`npm run typecheck` 跑全仓类型检查。
 - 浏览器端到端验证（Playwright）：首页 / 设置 / 工作区 / 编辑器生成区 / 导图 / 文档抽屉 / 分支建议与整树生成，无控制台错误。
 
