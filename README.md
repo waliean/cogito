@@ -7,7 +7,7 @@
 <img src="https://cdn.jsdelivr.net/gh/waliean/cogito@main/assets/banner.png" alt="Cogito — 你思，它拓" width="100%">
 
 [![License: MIT][license-shield]][license-url]
-[![版本: 0.4.0][version-shield]][version-url]
+[![版本: 0.5.0][version-shield]][version-url]
 [![Node 22+][node-shield]][node-url]
 [![平台: Windows][windows-shield]][version-url]
 
@@ -306,7 +306,7 @@ CoT、RAG、上下文窗口、Token、前缀缓存……AI 的回答里到处是
 ```bash
 npm install        # Node 22+（npm workspaces：shared + backend + frontend）
 npm run dev        # 一键启动：后端 :3001 + 前端 :5173（Vite 自动代理 /api）
-npm test           # 全部测试：后端 144 用例 + 前端 62 用例
+npm test           # 全部测试：后端 146 用例 + 前端 62 用例
 npm run typecheck  # 全仓 TypeScript 类型检查
 npm run dist:win   # 打包 Windows 安装版 + 便携版（输出到 release/）
 ```
@@ -361,7 +361,7 @@ npm run dist:win   # 打包 Windows 安装版 + 便携版（输出到 release/�
 | AI | openai SDK（baseURL 指向 DeepSeek），JSON 模式、超时、重试、错误码映射 |
 | 文档 | multer 上传校验 + pdf-parse 提取 + iconv-lite（UTF-8/GBK）解码 |
 | 桌面 | Electron 43 + electron-builder（NSIS / 便携版） |
-| 测试 | Vitest（后端 144 用例 + 前端 62 用例），supertest + jsdom |
+| 测试 | Vitest（后端 146 用例 + 前端 62 用例），supertest + jsdom |
 | 仓库 | npm workspaces monorepo：`shared`（共享类型/常量）/ `backend` / `frontend` |
 
 ## 架构一览
@@ -389,7 +389,7 @@ npm run dist:win   # 打包 Windows 安装版 + 便携版（输出到 release/�
 
 ## 测试与质量
 
-- **后端 144 用例**：存储原子写/损坏恢复、卡片状态机与并发防重入、AI 重试与错误码映射、文档上传校验与 GBK 解码、全部 API 集成（X-API-Key 优先级、统一错误结构）；
+- **后端 146 用例**：存储原子写/损坏恢复、卡片状态机与并发防重入、AI 重试与错误码映射、文档上传校验与 GBK 解码、全部 API 集成（X-API-Key 优先级、统一错误结构）；
 - **前端 62 用例**：五个异步 store（workspace / card / document / settings / term；ui 为同步视图状态）的流程测试、TermText 最长优先高亮匹配、dagre 布局确定性、API 客户端错误包装；
 - 命令行：`npm test` 跑全量；`npm run typecheck` 跑全仓类型检查。
 - 浏览器端到端验证（Playwright）：首页 / 设置 / 工作区 / 编辑器生成区 / 导图 / 文档抽屉 / 分支建议与整树生成，无控制台错误。
@@ -432,7 +432,7 @@ Henry — 一个相信「AI 应该放大思考，而非替代思考」的独立�
 <!-- 徽章链接（reference-style） -->
 [license-shield]: https://img.shields.io/badge/License-MIT-blue.svg
 [license-url]: ./LICENSE
-[version-shield]: https://img.shields.io/badge/%E7%89%88%E6%9C%AC-0.4.0-blue
+[version-shield]: https://img.shields.io/badge/%E7%89%88%E6%9C%AC-0.5.0-blue
 [version-url]: https://github.com/waliean/cogito/releases
 [node-shield]: https://img.shields.io/badge/Node-22%2B-339933
 [node-url]: https://nodejs.org

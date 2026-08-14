@@ -7,7 +7,7 @@
 <img src="https://cdn.jsdelivr.net/gh/waliean/cogito@main/assets/banner.png" alt="Cogito — You think, it expands" width="100%">
 
 [![License: MIT][license-shield]][license-url]
-[![Version: 0.4.0][version-shield]][version-url]
+[![Version: 0.5.0][version-shield]][version-url]
 [![Node 22+][node-shield]][node-url]
 [![Platform: Windows][windows-shield]][version-url]
 
@@ -306,7 +306,7 @@ Why design it this way? Because what AI is best at is "expanding along a given d
 ```bash
 npm install        # Node 22+ (npm workspaces: shared + backend + frontend)
 npm run dev        # one-command start: backend :3001 + frontend :5173 (Vite auto-proxies /api)
-npm test           # all tests: backend 144 cases + frontend 62 cases
+npm test           # all tests: backend 146 cases + frontend 62 cases
 npm run typecheck  # repo-wide TypeScript type check
 npm run dist:win   # package Windows installer + portable (output to release/)
 ```
@@ -361,7 +361,7 @@ Take "finish reading an AI survey PDF and form my own knowledge system" as an ex
 | AI | openai SDK (baseURL pointed at DeepSeek), JSON mode, timeout, retry, error-code mapping |
 | Documents | multer upload validation + pdf-parse extraction + iconv-lite (UTF-8/GBK) decoding |
 | Desktop | Electron 43 + electron-builder (NSIS / portable) |
-| Testing | Vitest (backend 144 cases + frontend 62 cases), supertest + jsdom |
+| Testing | Vitest (backend 146 cases + frontend 62 cases), supertest + jsdom |
 | Repo | npm workspaces monorepo: `shared` (shared types/constants) / `backend` / `frontend` |
 
 ## Architecture Overview
@@ -389,7 +389,7 @@ Take "finish reading an AI survey PDF and form my own knowledge system" as an ex
 
 ## Testing and Quality
 
-- **Backend 144 cases**: storage atomic-write/corruption-recovery, card state machine and concurrency re-entry prevention, AI retry and error-code mapping, document upload validation and GBK decoding, full API integration (X-API-Key priority, unified error structure);
+- **Backend 146 cases**: storage atomic-write/corruption-recovery, card state machine and concurrency re-entry prevention, AI retry and error-code mapping, document upload validation and GBK decoding, full API integration (X-API-Key priority, unified error structure);
 - **Frontend 62 cases**: flow tests for five async stores (workspace / card / document / settings / term; ui is sync view state), TermText longest-first highlight matching, dagre layout determinism, API client error wrapping, and i18n language resolution / error localization;
 - Commands: `npm test` runs everything; `npm run typecheck` runs repo-wide type checks.
 - Browser end-to-end validation (Playwright): home / settings / workspace / editor generation area / mind map / document drawer / branch suggestions and full-tree generation, with no console errors; language switching between Chinese and English verified live.
@@ -432,7 +432,7 @@ Henry — an independent developer who believes AI should amplify thinking, not 
 <!-- Badge links (reference-style) -->
 [license-shield]: https://img.shields.io/badge/License-MIT-blue.svg
 [license-url]: ./LICENSE
-[version-shield]: https://img.shields.io/badge/Version-0.4.0-blue
+[version-shield]: https://img.shields.io/badge/Version-0.5.0-blue
 [version-url]: https://github.com/waliean/cogito/releases
 [node-shield]: https://img.shields.io/badge/Node-22%2B-339933
 [node-url]: https://nodejs.org
