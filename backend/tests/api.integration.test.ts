@@ -362,6 +362,23 @@ describe('API integration', () => {
       expect(cleared.body.settings.hasApiKey).toBe(false);
     });
 
+    it('省略 apiKey（undefined）时保留已存 Key', async () => {
+      await request(app).put('/api/settings').send({ apiKey: 'sk-keep' }).expect(200);
+      const res = await request(app)
+        .put('/api/settings')
+        .send({ model: 'deepseek-v4-pro' })
+        .expect(200);
+      expect(res.body.settings.hasApiKey).toBe(true);
+    });
+
+    it('language 非法值 -> 400 E_VALIDATION', async () => {
+      const res = await request(app)
+        .put('/api/settings')
+        .send({ language: 'fr' })
+        .expect(400);
+      expect(res.body.error.code).toBe('E_VALIDATION');
+    });
+
     it('temperature 越界 -> 400 E_VALIDATION', async () => {
       const res = await request(app)
         .put('/api/settings')
