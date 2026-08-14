@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useWorkspaceStore, useDocumentStore, useUIStore } from '../../state/store.js';
 import { getFolderTree, getFolderFile } from '../../api/workspaces.js';
 import type { FileTreeNode as FileNode } from '../../api/workspaces.js';
@@ -33,6 +34,7 @@ function TreeNode({
   depth: number;
   onSelect: (node: FileNode) => void;
 }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(depth < 2);
 
   if (node.type === 'folder') {
@@ -63,12 +65,13 @@ function TreeNode({
     >
       <FileIcon ext={node.ext} />
       <span className="fe-file-name">{node.name}</span>
-      {node.imported && <span className="fe-imported-mark" title="已导入">✓</span>}
+      {node.imported && <span className="fe-imported-mark" title={t('files.imported')}>✓</span>}
     </div>
   );
 }
 
 export function FileExplorer({ workspaceId }: FileExplorerProps) {
+  const { t } = useTranslation();
   const [tree, setTree] = useState<FileNode[]>([]);
   const [rootPath, setRootPath] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -102,7 +105,7 @@ export function FileExplorer({ workspaceId }: FileExplorerProps) {
     } catch {
       setTree([]);
       setRootPath(null);
-      setError('无法加载文件树');
+      setError(t('files.loadTreeError'));
     }
     setLoading(false);
   }, [workspaceId]);
@@ -120,7 +123,7 @@ export function FileExplorer({ workspaceId }: FileExplorerProps) {
   // 导入文件
   const handleImport = async (node: FileNode) => {
     if (uploading) return;
-    setScanMsg('正在导入…');
+    setScanMsg(t('files.importing'));
     try {
       // 通过 fetch 获取文件内容并构造 File 对象上传
       const res = await getFolderFile(workspaceId, node.path);
@@ -132,11 +135,11 @@ export function FileExplorer({ workspaceId }: FileExplorerProps) {
         const file = new File([blob], node.name, { type: 'text/plain' });
         await upload(workspaceId, file);
       }
-      setScanMsg('导入完成');
+      setScanMsg(t('files.importDone'));
       setTimeout(() => setScanMsg(null), 2000);
       await loadTree();
     } catch {
-      setScanMsg('导入失败');
+      setScanMsg(t('files.importFailed'));
       setTimeout(() => setScanMsg(null), 3000);
     }
   };
@@ -145,16 +148,16 @@ export function FileExplorer({ workspaceId }: FileExplorerProps) {
     return (
       <div className="fe-container">
         <div className="fe-header">
-          <span className="fe-header-title">文件</span>
+          <span className="fe-header-title">{t('files.title')}</span>
           <button
             className="fe-refresh"
             onClick={() => toggleSidebarPanel('file')}
-            title="关闭"
+            title={t('common.close')}
           >
             ×
           </button>
         </div>
-        <div className="fe-loading">加载文件树…</div>
+        <div className="fe-loading">{t('files.loadingTree')}</div>
       </div>
     );
   }
@@ -163,10 +166,10 @@ export function FileExplorer({ workspaceId }: FileExplorerProps) {
     return (
       <div className="fe-container">
         <div className="fe-header">
-          <span className="fe-header-title">文件</span>
+          <span className="fe-header-title">{t('files.title')}</span>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button className="fe-refresh" onClick={loadTree} title="刷新">↻</button>
-            <button className="fe-refresh" onClick={() => toggleSidebarPanel('file')} title="关闭">×</button>
+            <button className="fe-refresh" onClick={loadTree} title={t('common.refresh')}>↻</button>
+            <button className="fe-refresh" onClick={() => toggleSidebarPanel('file')} title={t('common.close')}>×</button>
           </div>
         </div>
         <div className="fe-error">{error}</div>
@@ -179,13 +182,13 @@ export function FileExplorer({ workspaceId }: FileExplorerProps) {
       {/* 文件树 */}
       <div className="fe-header">
         <span className="fe-header-title">
-          文件
+          {t('files.title')}
         </span>
         <div style={{ display: 'flex', gap: 4 }}>
-          <button className="fe-refresh" onClick={loadTree} title="刷新">
+          <button className="fe-refresh" onClick={loadTree} title={t('common.refresh')}>
             ↻
           </button>
-          <button className="fe-refresh" onClick={() => toggleSidebarPanel('file')} title="关闭">
+          <button className="fe-refresh" onClick={() => toggleSidebarPanel('file')} title={t('common.close')}>
             ×
           </button>
         </div>
@@ -194,8 +197,8 @@ export function FileExplorer({ workspaceId }: FileExplorerProps) {
         {tree.length === 0 ? (
           <div className="fe-empty-files">
             {ws?.folderPath
-              ? '文件夹中无可读文件（PDF/TXT/MD）'
-              : '暂无已上传的文档，请先导入文件'}
+              ? t('files.noReadableFiles')
+              : t('files.noDocuments')}
           </div>
         ) : (
           tree.map((node) => (
@@ -219,9 +222,9 @@ export function FileExplorer({ workspaceId }: FileExplorerProps) {
               <button
                 className="fe-open-btn"
                 onClick={() => setOpenedFile({ path: selectedFile.path, name: selectedFile.name })}
-                title="打开文件"
+                title={t('files.openFile')}
               >
-                打开
+                {t('files.open')}
               </button>
               {!selectedFile.imported && (
                 <button
@@ -229,12 +232,12 @@ export function FileExplorer({ workspaceId }: FileExplorerProps) {
                   onClick={() => handleImport(selectedFile)}
                   disabled={uploading}
                 >
-                  {uploading ? '导入中…' : '导入'}
+                  {uploading ? t('files.importing') : t('files.import')}
                 </button>
               )}
               <button
                 className="fe-open-btn"
-                title="在资源管理器中打开"
+                title={t('files.openInExplorer')}
                 onClick={async () => {
                   const api = (window as any).cogitoAPI;
                   if (api?.isElectron) {

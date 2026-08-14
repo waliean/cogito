@@ -3,6 +3,7 @@
 // ============================================================
 
 import { useEffect, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   useWorkspaceStore,
   useCardStore,
@@ -18,6 +19,7 @@ import { DictionaryView } from './components/terms/DictionaryView.js';
 import { SettingsPanel } from './components/settings/SettingsPanel.js';
 
 function WorkspaceList() {
+  const { t, i18n } = useTranslation();
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const loading = useWorkspaceStore((s) => s.loading);
   const error = useWorkspaceStore((s) => s.error);
@@ -76,7 +78,10 @@ function WorkspaceList() {
     }
 
     try {
-      const ws = await create(baseName, `来自文件夹${folderPath ? `：${folderPath}` : ''}`, folderPath ?? undefined);
+      const desc = folderPath
+        ? t('workspace.fromFolder', { path: folderPath })
+        : t('workspace.fromFolderNoPath');
+      const ws = await create(baseName, desc, folderPath ?? undefined);
 
       if (electronApi?.isElectron && folderPath) {
         // Electron：后端直接扫描本地路径
@@ -119,29 +124,32 @@ function WorkspaceList() {
         </div>
         <div className="ws-list-actions">
           <button className="topbar-btn" onClick={() => setView('glossary')}>
-            术语库
+            {t('nav.glossary')}
           </button>
           <button className="topbar-btn" onClick={() => setView('dictionary')}>
-            词典
+            {t('nav.dictionary')}
           </button>
           <button className="topbar-btn" onClick={() => setSettingsOpen(true)}>
-            设置
+            {t('nav.settings')}
           </button>
         </div>
       </div>
 
       {/* 副标题 */}
       <p className="ws-list-sub">
-        AI 知识卡片探索工作区
-        <span className="ws-list-count">{workspaces.length} 个工作区</span>
+        {t('workspace.subtitle')}
+        <span className="ws-list-count">{t('workspace.count', { count: workspaces.length })}</span>
       </p>
 
       {error && <div className="ws-error">{error}</div>}
 
       {scanResult && (
         <div className="ws-scan-result">
-          扫描完成：发现 {scanResult.found} 个文件，导入 {scanResult.imported} 个，
-          跳过 {scanResult.skipped} 个
+          {t('workspace.scanDone', {
+            found: scanResult.found,
+            imported: scanResult.imported,
+            skipped: scanResult.skipped,
+          })}
           <button className="ws-scan-close" onClick={clearScanResult}>×</button>
         </div>
       )}
@@ -154,11 +162,11 @@ function WorkspaceList() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-            placeholder="新工作区名称"
+            placeholder={t('workspace.newNamePlaceholder')}
             disabled={loading}
           />
           <button onClick={handleCreate} disabled={loading || !name.trim()}>
-            {loading ? '创建中...' : '新建'}
+            {loading ? t('workspace.creating') : t('workspace.new')}
           </button>
           <button
             className="ws-create-folder-btn"
@@ -171,12 +179,12 @@ function WorkspaceList() {
               }
             }}
             disabled={loading}
-            title="选择本地文件夹作为工作区，自动导入 PDF/TXT/Markdown"
+            title={t('workspace.selectFolderTitle')}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
             </svg>
-            选择文件夹
+            {t('workspace.selectFolder')}
           </button>
           {/* 浏览器 fallback：webkitdirectory 选择文件夹 */}
           <input
@@ -199,7 +207,7 @@ function WorkspaceList() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="搜索工作区..."
+            placeholder={t('workspace.searchPlaceholder')}
           />
         </div>
       </div>
@@ -207,7 +215,7 @@ function WorkspaceList() {
       {/* 空状态 */}
       {filtered.length === 0 && !loading && (
         <div className="ws-empty">
-          {search ? '未找到匹配的工作区' : '暂无工作区，输入名称并点击「新建」，或选择本地文件夹开始探索'}
+          {search ? t('workspace.noMatches') : t('workspace.empty')}
         </div>
       )}
 
@@ -221,12 +229,13 @@ function WorkspaceList() {
                 <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
               </svg>
             </div>
-            <span>新建工作区</span>
+            <span>{t('workspace.newWorkspace')}</span>
           </div>
         )}
         {filtered.map((ws) => {
           const count = cardCountByWs.get(ws.id) ?? 0;
-          const created = new Date(ws.createdAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+          const dateLocale = i18n.language === 'zh' ? 'zh-CN' : 'en-US';
+          const created = new Date(ws.createdAt).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
           return (
             <div key={ws.id} className="ws-card" onClick={() => setCurrent(ws.id)}>
               <div className="ws-card-top">
@@ -235,10 +244,10 @@ function WorkspaceList() {
                   className="ws-card-delete"
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (confirm(`删除工作区「${ws.name}」？`)) remove(ws.id);
+                    if (confirm(t('workspace.deleteConfirm', { name: ws.name }))) remove(ws.id);
                   }}
                   disabled={loading}
-                  title="删除工作区"
+                  title={t('workspace.deleteTitle')}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
@@ -251,7 +260,7 @@ function WorkspaceList() {
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" />
                   </svg>
-                  {count} 张卡片
+                  {t('workspace.cardCount', { count })}
                 </span>
                 <span className="ws-card-date">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -277,6 +286,7 @@ function WorkspaceList() {
 }
 
 function WorkspaceView() {
+  const { t } = useTranslation();
   const currentId = useWorkspaceStore((s) => s.currentId);
   const loadCards = useCardStore((s) => s.loadCards);
   const tree = useCardStore((s) => s.tree);
@@ -307,7 +317,7 @@ function WorkspaceView() {
     <AppShell>
       <div className="ws-header">
         <button className="back-btn" onClick={() => setCurrent(null)}>
-          &larr; 工作区列表
+          &larr; {t('workspace.back')}
         </button>
         {currentWs && <span className="ws-name-header">{currentWs.name}</span>}
       </div>
@@ -330,11 +340,11 @@ function WorkspaceView() {
         {selectedId && viewSidebarOpen && (
           <div className="view-sidebar">
             <div className="view-sidebar-header">
-              <span className="view-sidebar-title">编辑卡片</span>
+              <span className="view-sidebar-title">{t('cards.sidebarTitle')}</span>
               <button
                 className="view-sidebar-close"
                 onClick={() => setViewSidebarOpen(false)}
-                title="关闭右侧栏"
+                title={t('cards.closeSidebar')}
               >
                 ×
               </button>

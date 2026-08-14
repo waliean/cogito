@@ -2,6 +2,7 @@ import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { useSettingsStore } from './state/store.js';
+import './i18n/index.js';
 import './index.css';
 import '@xyflow/react/dist/style.css';
 

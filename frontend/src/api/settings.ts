@@ -2,7 +2,7 @@
 // 设置 API
 // ============================================================
 
-import type { PublicSettings, TermDictStyle } from '@cogito/shared';
+import type { PublicSettings, TermDictStyle, LanguagePreference } from '@cogito/shared';
 import { api } from './client.js';
 
 export interface SettingsPatch {
@@ -12,6 +12,7 @@ export interface SettingsPatch {
   temperature?: number;
   timeoutMs?: number;
   dictTermStyle?: TermDictStyle;
+  language?: LanguagePreference;
 }
 
 interface SettingsResponse {

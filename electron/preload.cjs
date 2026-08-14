@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('cogitoAPI', {
   openDataDir: () => ipcRenderer.invoke('open-data-dir'),
   selectFolder: () => ipcRenderer.invoke('select-folder'),
   openFile: (filePath) => ipcRenderer.invoke('open-file', filePath),
+  setLanguage: (lang) => ipcRenderer.invoke('set-language', lang),
   isElectron: true,
 });

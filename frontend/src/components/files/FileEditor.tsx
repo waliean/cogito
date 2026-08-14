@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getFolderFile } from '../../api/workspaces.js';
 import type { FileContentResponse } from '../../api/workspaces.js';
 import { api } from '../../api/client.js';
@@ -16,6 +17,7 @@ interface FileEditorProps {
 }
 
 export function FileEditor({ workspaceId, filePath, fileName, onClose }: FileEditorProps) {
+  const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [originalContent, setOriginalContent] = useState('');
   const [loading, setLoading] = useState(true);
@@ -36,7 +38,7 @@ export function FileEditor({ workspaceId, filePath, fileName, onClose }: FileEdi
         if (cancelled) return;
         if (res.isPdf) {
           setIsPdf(true);
-          setContent('[PDF 文件 — 只读，不可编辑]');
+          setContent(t('files.pdfReadonlyPlaceholder'));
           setOriginalContent('');
         } else {
           const text = res.content ?? '';
@@ -47,7 +49,7 @@ export function FileEditor({ workspaceId, filePath, fileName, onClose }: FileEdi
       })
       .catch(() => {
         if (!cancelled) {
-          setError('无法读取文件');
+          setError(t('files.readError'));
           setLoading(false);
         }
       });
@@ -63,7 +65,7 @@ export function FileEditor({ workspaceId, filePath, fileName, onClose }: FileEdi
       setOriginalContent(content);
       setSaving(false);
     } catch (e: any) {
-      setError(e.message ?? '保存失败');
+      setError(e.message ?? t('files.saveError'));
       setSaving(false);
     }
   };
@@ -82,7 +84,7 @@ export function FileEditor({ workspaceId, filePath, fileName, onClose }: FileEdi
               {ext === 'pdf' ? 'PDF' : ext === 'md' ? 'MD' : 'TXT'}
             </span>
             <span className="file-editor-name">{fileName}</span>
-            {hasChanges && <span className="file-editor-dirty">● 未保存</span>}
+            {hasChanges && <span className="file-editor-dirty">● {t('files.unsavedDirty')}</span>}
           </div>
           <div className="file-editor-actions">
             {isEditable && (
@@ -91,20 +93,20 @@ export function FileEditor({ workspaceId, filePath, fileName, onClose }: FileEdi
                   className={`file-editor-tab ${!preview ? 'active' : ''}`}
                   onClick={() => setPreview(false)}
                 >
-                  编辑
+                  {t('common.edit')}
                 </button>
                 <button
                   className={`file-editor-tab ${preview ? 'active' : ''}`}
                   onClick={() => setPreview(true)}
                 >
-                  预览
+                  {t('common.preview')}
                 </button>
                 <button
                   className="file-editor-save"
                   onClick={handleSave}
                   disabled={!hasChanges || saving}
                 >
-                  {saving ? '保存中…' : '保存'}
+                  {saving ? t('common.saving') : t('common.save')}
                 </button>
               </>
             )}
@@ -118,12 +120,12 @@ export function FileEditor({ workspaceId, filePath, fileName, onClose }: FileEdi
         {/* 正文 */}
         <div className="file-editor-body">
           {loading ? (
-            <div className="file-editor-loading">加载中…</div>
+            <div className="file-editor-loading">{t('common.loading')}</div>
           ) : isPdf ? (
             <div className="file-editor-pdf-placeholder">
               <div className="fe-pdf-icon">PDF</div>
-              <p className="fe-pdf-text">PDF 文件为只读，无法在此编辑</p>
-              <p className="fe-pdf-hint">可点击「导入」将 PDF 内容转为 AI 摘要卡片</p>
+              <p className="fe-pdf-text">{t('files.pdfReadonly')}</p>
+              <p className="fe-pdf-hint">{t('files.pdfImportHint')}</p>
             </div>
           ) : preview ? (
             <div className="file-editor-preview">
@@ -144,11 +146,11 @@ export function FileEditor({ workspaceId, filePath, fileName, onClose }: FileEdi
           <span>{fileName}</span>
           <span>
             {isEditable
-              ? `${content.split('\n').length} 行 · ${content.length} 字符`
-              : '只读'}
+              ? t('files.lineCharCount', { lines: content.split('\n').length, chars: content.length })
+              : t('files.readonly')}
           </span>
           {hasChanges && isEditable && (
-            <span className="file-editor-unsaved">有未保存的修改</span>
+            <span className="file-editor-unsaved">{t('files.unsavedChanges')}</span>
           )}
         </div>
       </div>

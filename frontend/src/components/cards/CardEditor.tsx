@@ -4,17 +4,13 @@
 // ============================================================
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { CardType } from '@cogito/shared';
 import { useCardStore, useSettingsStore, useUIStore } from '../../state/store.js';
 import { MarkdownView } from './MarkdownView.js';
 
-const MODE_LABELS: Record<CardType, string> = {
-  child: '深入',
-  divergent: '发散',
-  branch: '分支',
-};
-
 export function CardEditor() {
+  const { t } = useTranslation();
   const selectedId = useCardStore((s) => s.selectedId);
   const byId = useCardStore((s) => s.byId);
   const updateCard = useCardStore((s) => s.updateCard);
@@ -42,7 +38,7 @@ export function CardEditor() {
   if (!card) {
     return (
       <div className="card-editor empty">
-        <p>选择一张卡片进行编辑</p>
+        <p>{t('cards.editorEmpty')}</p>
       </div>
     );
   }
@@ -71,7 +67,7 @@ export function CardEditor() {
     <div className="card-editor">
       <div className="editor-header" onClick={() => setCollapsed(!collapsed)}>
         <span className="editor-toggle">{collapsed ? '▸' : '▾'}</span>
-        <span className="editor-header-label">内容编辑</span>
+        <span className="editor-header-label">{t('cards.editorHeader')}</span>
       </div>
       <div className={`editor-body ${collapsed ? 'collapsed' : ''}`}>
         <input
@@ -79,20 +75,20 @@ export function CardEditor() {
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="卡片标题"
+          placeholder={t('cards.titlePlaceholder')}
         />
         <div className="editor-toolbar">
           <button
             className={`editor-tab ${!preview ? 'active' : ''}`}
             onClick={() => setPreview(false)}
           >
-            编辑
+            {t('common.edit')}
           </button>
           <button
             className={`editor-tab ${preview ? 'active' : ''}`}
             onClick={() => setPreview(true)}
           >
-            预览
+            {t('common.preview')}
           </button>
         </div>
         {preview ? (
@@ -102,14 +98,14 @@ export function CardEditor() {
             className="editor-content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Markdown 内容..."
+            placeholder={t('cards.contentPlaceholder')}
             rows={10}
           />
         )}
 
         {card.terms && card.terms.length > 0 && (
           <div className="editor-terms">
-            <span className="editor-terms-label">术语：</span>
+            <span className="editor-terms-label">{t('cards.termsLabel')}</span>
             {card.terms.map((t) => (
               <button
                 key={t.term}
@@ -127,26 +123,26 @@ export function CardEditor() {
         )}
 
         <div className="editor-actions">
-          <button onClick={handleSave}>保存</button>
-          <button className="secondary" onClick={handleCancel}>取消</button>
+          <button onClick={handleSave}>{t('common.save')}</button>
+          <button className="secondary" onClick={handleCancel}>{t('common.cancel')}</button>
         </div>
 
         <div className="editor-generate">
-          <h4>AI 生成子卡</h4>
+          <h4>{t('cards.generateSection')}</h4>
           {!hasKey && (
             <p className="editor-generate-warn">
-              尚未配置 API Key，生成不可用（请在右上角「设置」中配置）。
+              {t('cards.noApiKeyWarn')}
             </p>
           )}
           <div className="generate-modes">
-            {(Object.keys(MODE_LABELS) as CardType[]).map((m) => (
+            {(['child', 'divergent', 'branch'] as CardType[]).map((m) => (
               <button
                 key={m}
                 className={`generate-mode ${mode === m ? 'active' : ''}`}
                 onClick={() => setMode(m)}
                 disabled={isGenerating}
               >
-                {MODE_LABELS[m]}
+                {t('cards.type.' + m)}
               </button>
             ))}
           </div>
@@ -154,7 +150,7 @@ export function CardEditor() {
             className="generate-instruction"
             value={instruction}
             onChange={(e) => setInstruction(e.target.value)}
-            placeholder="补充意图（可选）：如「关注推理时延方向」"
+            placeholder={t('cards.instructionPlaceholder')}
             rows={2}
             disabled={isGenerating}
           />
@@ -163,21 +159,23 @@ export function CardEditor() {
             onClick={() => handleGenerate(mode)}
             disabled={isGenerating || !hasKey}
           >
-            {isGenerating ? '生成中…' : `生成${MODE_LABELS[mode]}子卡`}
+            {isGenerating ? t('cards.status.processing') : t('cards.generateSubCard', { type: t('cards.type.' + mode) })}
           </button>
         </div>
 
         {card.aiMeta && (
           <div className="editor-ai-meta">
-            <h4>AI 元信息</h4>
+            <h4>{t('cards.aiMetaTitle')}</h4>
             <ul>
-              <li>模型：{card.aiMeta.model}</li>
-              {card.aiMeta.mode && <li>模式：{MODE_LABELS[card.aiMeta.mode] ?? card.aiMeta.mode}</li>}
-              <li>Tokens：{card.aiMeta.promptTokens} / {card.aiMeta.completionTokens}</li>
-              <li>耗时：{card.aiMeta.latencyMs}ms</li>
-              {card.aiMeta.retried && <li>解析重试：是</li>}
-              {card.aiMeta.error && <li className="meta-error">错误码：{card.aiMeta.error}</li>}
-              {card.aiMeta.errorMessage && <li className="meta-error">详情：{card.aiMeta.errorMessage}</li>}
+              <li>{t('cards.metaModel', { model: card.aiMeta.model })}</li>
+              {card.aiMeta.mode && (
+                <li>{t('cards.metaMode', { mode: t('cards.type.' + card.aiMeta.mode, { defaultValue: card.aiMeta.mode }) })}</li>
+              )}
+              <li>{t('cards.metaTokens', { prompt: card.aiMeta.promptTokens, completion: card.aiMeta.completionTokens })}</li>
+              <li>{t('cards.metaLatency', { ms: card.aiMeta.latencyMs })}</li>
+              {card.aiMeta.retried && <li>{t('cards.metaRetried')}</li>}
+              {card.aiMeta.error && <li className="meta-error">{t('cards.metaErrorCode', { code: card.aiMeta.error })}</li>}
+              {card.aiMeta.errorMessage && <li className="meta-error">{t('cards.metaErrorDetail', { detail: card.aiMeta.errorMessage })}</li>}
             </ul>
           </div>
         )}

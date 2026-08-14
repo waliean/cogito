@@ -2,14 +2,9 @@
 // SuggestionPanel —— AI 分支建议浮动面板
 // ============================================================
 
+import { useTranslation } from 'react-i18next';
 import type { Suggestion } from '@cogito/shared';
 import { useCardStore } from '../../state/store.js';
-
-const MODE_LABELS: Record<string, string> = {
-  child: '深入',
-  divergent: '发散',
-  branch: '分支',
-};
 
 interface SuggestionPanelProps {
   cardId: string;
@@ -30,7 +25,9 @@ export function SuggestionPanel({
   onAdopt,
   generating,
 }: SuggestionPanelProps) {
-  const cardTitle = useCardStore((s) => s.byId(cardId)?.title ?? '（未知卡片）');
+  const { t } = useTranslation();
+  const cardTitle = useCardStore((s) => s.byId(cardId)?.title);
+  const title = cardTitle || t('cards.unknownCard');
 
   const handleRetry = () => {
     useCardStore.getState().fetchSuggestions(cardId);
@@ -39,29 +36,29 @@ export function SuggestionPanel({
   return (
     <div className="suggestion-panel">
       <div className="suggestion-panel-header">
-        <span>分支建议 · {cardTitle}</span>
+        <span>{t('mindmap.suggestionsFor', { title })}</span>
         <button className="panel-close" onClick={onClose}>×</button>
       </div>
 
       {loading && (
-        <div className="suggestion-loading">AI 正在分析卡片…</div>
+        <div className="suggestion-loading">{t('mindmap.analyzing')}</div>
       )}
 
       {error && (
         <div className="suggestion-error">
           <span>{error}</span>
-          <button onClick={handleRetry} className="suggestion-retry-btn">重试</button>
+          <button onClick={handleRetry} className="suggestion-retry-btn">{t('common.retry')}</button>
         </div>
       )}
 
       {!loading && !error && suggestions.length === 0 && (
-        <div className="suggestion-empty">暂无建议</div>
+        <div className="suggestion-empty">{t('mindmap.noSuggestions')}</div>
       )}
 
       {!loading && !error && suggestions.map((s, i) => (
         <div key={i} className="suggestion-item">
           <span className={`suggestion-mode-badge mode-${s.type}`}>
-            {MODE_LABELS[s.type] ?? s.type}
+            {t('cards.type.' + s.type, { defaultValue: s.type })}
           </span>
           <div className="suggestion-title">{s.title}</div>
           <div className="suggestion-reason">{s.reason}</div>
@@ -70,7 +67,7 @@ export function SuggestionPanel({
             disabled={generating}
             onClick={() => onAdopt(s)}
           >
-            {generating ? '生成中…' : '采纳生成'}
+            {generating ? t('mindmap.generating') : t('mindmap.adopt')}
           </button>
         </div>
       ))}

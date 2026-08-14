@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useMemo, useCallback, useState, useEffect, type PointerEvent as ReactPointerEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ReactFlow,
   Background,
@@ -24,17 +25,6 @@ import { GenerateTreeDialog } from './GenerateTreeDialog.js';
 
 const nodeTypes: NodeTypes = {
   card: MindMapCardNode,
-};
-
-// ReactFlow 控件/小地图等内置元素的悬浮提示（title/aria-label）中文化
-const ariaLabelConfig: Partial<AriaLabelConfig> = {
-  'controls.ariaLabel': '导图缩放控件',
-  'controls.zoomIn.ariaLabel': '放大',
-  'controls.zoomOut.ariaLabel': '缩小',
-  'controls.fitView.ariaLabel': '适应视图',
-  'controls.interactive.ariaLabel': '锁定 / 解锁画布',
-  'minimap.ariaLabel': '导图小地图',
-  'handle.ariaLabel': '连接点',
 };
 
 const STORAGE_PREFIX = 'cogito.mindmap.collapsed.';
@@ -99,6 +89,7 @@ function buildChildCountMap(tree: CardTreeNode[]): Map<string, number> {
 }
 
 export function MindMapView() {
+  const { t } = useTranslation();
   const tree = useCardStore((s) => s.tree);
   const cards = useCardStore((s) => s.cards);
   const select = useCardStore((s) => s.select);
@@ -119,6 +110,17 @@ export function MindMapView() {
   const [collapsed, setCollapsed] = useState<Set<string>>(() => loadCollapsed(workspaceId));
   const [treeDialogOpen, setTreeDialogOpen] = useState(false);
   const [minimapSize, setMinimapSize] = useState(() => loadMinimapSize());
+
+  // ReactFlow 控件/小地图等内置元素的悬浮提示（title/aria-label）随语言切换
+  const ariaLabelConfig = useMemo<Partial<AriaLabelConfig>>(() => ({
+    'controls.ariaLabel': t('mindmap.ariaControls'),
+    'controls.zoomIn.ariaLabel': t('mindmap.ariaZoomIn'),
+    'controls.zoomOut.ariaLabel': t('mindmap.ariaZoomOut'),
+    'controls.fitView.ariaLabel': t('mindmap.ariaFitView'),
+    'controls.interactive.ariaLabel': t('mindmap.ariaInteractive'),
+    'minimap.ariaLabel': t('mindmap.ariaMinimap'),
+    'handle.ariaLabel': t('mindmap.ariaHandle'),
+  }), [t]);
 
   // Reload collapsed when workspace changes
   useEffect(() => {
@@ -223,7 +225,7 @@ export function MindMapView() {
   if (tree.length === 0 && !loading) {
     return (
       <div className="mindmap-container">
-        <div className="mindmap-placeholder">暂无卡片，请在左侧创建或从文档生成</div>
+        <div className="mindmap-placeholder">{t('mindmap.placeholder')}</div>
       </div>
     );
   }
@@ -232,14 +234,14 @@ export function MindMapView() {
     <div className="mindmap-container">
       <div className="mindmap-toolbar">
         <button className="mindmap-toolbar-btn" disabled={!selectedId || suggestionsLoadingId !== null || !hasApiKey}
-          title={!hasApiKey ? '请先配置 API Key' : !selectedId ? '请先选中一张卡片' : '让 AI 为选中卡片给出深入/发散/分支建议'}
+          title={!hasApiKey ? t('mindmap.apiKeyRequired') : !selectedId ? t('mindmap.selectCardFirst') : t('mindmap.suggestHint')}
           onClick={() => { if (selectedId) fetchSuggestions(selectedId); }}>
-          {suggestionsLoadingId !== null ? '建议生成中…' : '分支建议'}
+          {suggestionsLoadingId !== null ? t('mindmap.suggesting') : t('mindmap.branchSuggestions')}
         </button>
         <button className="mindmap-toolbar-btn" disabled={tree.length === 0 || generateTreeRunning || !hasApiKey}
-          title={!hasApiKey ? '请先配置 API Key' : generateTreeRunning ? '生成中…' : ''}
+          title={!hasApiKey ? t('mindmap.apiKeyRequired') : generateTreeRunning ? t('mindmap.generating') : ''}
           onClick={() => setTreeDialogOpen(true)}>
-          {generateTreeRunning ? '生成中…' : '一键生成完整图'}
+          {generateTreeRunning ? t('mindmap.generating') : t('mindmap.generateTree')}
         </button>
       </div>
       <ReactFlow
@@ -272,7 +274,7 @@ export function MindMapView() {
         />
         <div
           className="mindmap-minimap-handle"
-          title="拖拽调整小地图大小"
+          title={t('mindmap.resizeMinimap')}
           style={{
             width: MINIMAP_HANDLE,
             height: MINIMAP_HANDLE,

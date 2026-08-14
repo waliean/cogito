@@ -82,6 +82,9 @@ export interface DocumentRecord {
 
 // ---- 设置 ----
 
+/** 语言偏好：'system' = 跟随系统 */
+export type LanguagePreference = 'system' | 'zh' | 'en';
+
 export interface PublicSettings {
   hasApiKey: boolean;
   baseUrl: string;
@@ -89,6 +92,7 @@ export interface PublicSettings {
   temperature: number;
   timeoutMs: number;
   dictTermStyle: TermDictStyle;
+  language: LanguagePreference;
 }
 
 export interface Settings extends PublicSettings {

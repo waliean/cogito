@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../state/store.js';
 import { DICTIONARY_SECTIONS } from '../../data/dictionary.js';
 import type { DictionaryEntry } from '../../data/dictionary.js';
@@ -13,6 +14,7 @@ interface DictionaryViewProps {
 }
 
 export function DictionaryView({ standalone }: DictionaryViewProps) {
+  const { t } = useTranslation();
   const setView = useUIStore((s) => s.setView);
   const [keyword, setKeyword] = useState('');
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
@@ -53,37 +55,39 @@ export function DictionaryView({ standalone }: DictionaryViewProps) {
 
   const hasResults = filteredSections.some((s) => s.entries.length > 0);
 
+  const totalEntries = DICTIONARY_SECTIONS.reduce((a, s) => a + s.entries.length, 0);
+
   return (
     <div className="dict-view">
       <div className="dict-header">
         {standalone && (
           <button className="dict-back-btn" onClick={() => setView('cards')}>
-            &larr; 返回工作区列表
+            &larr; {t('common.backToWorkspaces')}
           </button>
         )}
-        <h2>AI 编码词典</h2>
+        <h2>{t('terms.dictTitle')}</h2>
         <p className="dict-desc">
-          《AI 编码词典》中文汉化版 — 共 {DICTIONARY_SECTIONS.reduce((a, s) => a + s.entries.length, 0)} 个词条，按 {DICTIONARY_SECTIONS.length} 个主题分组
+          {t('terms.dictDesc', { count: totalEntries, sections: DICTIONARY_SECTIONS.length })}
         </p>
       </div>
 
       <input
         className="dict-search"
         type="text"
-        placeholder="搜索词条（中英文关键词）…"
+        placeholder={t('terms.dictSearchPlaceholder')}
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
       />
 
       {!hasResults && (
-        <div className="dict-empty">没有匹配的词条</div>
+        <div className="dict-empty">{t('terms.dictEmpty')}</div>
       )}
 
       {filteredSections.map((section) => (
         <div key={section.section} className="dict-section">
           <div className="dict-section-header">
             <span className="dict-section-title">{section.section}</span>
-            <span className="dict-count">{section.entries.length} 个词条</span>
+            <span className="dict-count">{t('terms.entryCount', { count: section.entries.length })}</span>
           </div>
 
           {section.entries.map((entry) => {

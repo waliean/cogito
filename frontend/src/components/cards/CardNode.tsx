@@ -3,7 +3,8 @@
 // ============================================================
 
 import { useState } from 'react';
-import type { Card, CardType, CardStatus } from '@cogito/shared';
+import { useTranslation } from 'react-i18next';
+import type { Card, CardType } from '@cogito/shared';
 import { useCardStore, useUIStore } from '../../state/store.js';
 import { TermText } from '../terms/TermText.js';
 
@@ -12,23 +13,10 @@ interface CardNodeProps {
   children?: React.ReactNode;
 }
 
-const TYPE_LABELS: Record<CardType, string> = {
-  child: '深入',
-  divergent: '发散',
-  branch: '分支',
-};
-
 const TYPE_CLASSES: Record<CardType, string> = {
   child: 'badge-child',
   divergent: 'badge-divergent',
   branch: 'badge-branch',
-};
-
-const STATUS_LABELS: Record<CardStatus, string> = {
-  draft: '草稿',
-  processing: '生成中…',
-  done: '完成',
-  failed: '失败',
 };
 
 function truncate(text: string, maxLen: number): string {
@@ -37,6 +25,7 @@ function truncate(text: string, maxLen: number): string {
 }
 
 export function CardNode({ card, children }: CardNodeProps) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(true);
   const selectedId = useCardStore((s) => s.selectedId);
   const generatingId = useCardStore((s) => s.generatingId);
@@ -59,7 +48,7 @@ export function CardNode({ card, children }: CardNodeProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm('删除此卡片？子卡片将提升为根。')) return;
+    if (!confirm(t('cards.deleteConfirm'))) return;
     await removeCard(card.id);
   };
 
@@ -76,13 +65,13 @@ export function CardNode({ card, children }: CardNodeProps) {
           {expanded ? '▾' : '▸'}
         </button>
         <span className={`card-type-badge ${TYPE_CLASSES[card.type]}`}>
-          {TYPE_LABELS[card.type]}
+          {t('cards.type.' + card.type)}
         </span>
         <span className="card-title">
-          <TermText text={card.title || '（无标题）'} terms={card.terms ?? []} activeTerm={activeTerm} workspaceId={card.workspaceId} sourceCardId={card.id} />
+          <TermText text={card.title || t('common.noTitle')} terms={card.terms ?? []} activeTerm={activeTerm} workspaceId={card.workspaceId} sourceCardId={card.id} />
         </span>
         <span className={`card-status status-${card.status}`}>
-          {isGenerating && card.status === 'processing' ? STATUS_LABELS.processing : STATUS_LABELS[card.status]}
+          {isGenerating && card.status === 'processing' ? t('cards.status.processing') : t('cards.status.' + card.status)}
         </span>
       </div>
       {isSelected && (
@@ -93,23 +82,23 @@ export function CardNode({ card, children }: CardNodeProps) {
               onClick={() => handleGenerate(card.aiMeta?.mode ?? 'child')}
               disabled={isGenerating}
             >
-              ↻ 重新生成
+              ↻ {t('cards.regenerate')}
             </button>
           ) : (
             <>
               <button onClick={() => handleGenerate('child')} disabled={isGenerating}>
-                {isGenerating ? '生成中…' : '+ 深入'}
+                {isGenerating ? t('cards.status.processing') : t('cards.addChild')}
               </button>
               <button onClick={() => handleGenerate('divergent')} disabled={isGenerating}>
-                + 发散
+                {t('cards.addDivergent')}
               </button>
               <button onClick={() => handleGenerate('branch')} disabled={isGenerating}>
-                + 分支
+                {t('cards.addBranch')}
               </button>
             </>
           )}
-          <button onClick={() => select(card.id)}>编辑</button>
-          <button className="danger" onClick={handleDelete}>删除</button>
+          <button onClick={() => select(card.id)}>{t('common.edit')}</button>
+          <button className="danger" onClick={handleDelete}>{t('common.delete')}</button>
         </div>
       )}
       {expanded && card.content && (

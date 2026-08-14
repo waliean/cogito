@@ -3,15 +3,10 @@
 // ============================================================
 
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDocumentStore, useWorkspaceStore, useUIStore } from '../../state/store.js';
 import { usePolling } from '../../hooks/usePolling.js';
 import type { DocumentRecord } from '@cogito/shared';
-
-const STATUS_LABELS: Record<DocumentRecord['status'], string> = {
-  processing: '处理中…',
-  done: '完成',
-  failed: '失败',
-};
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes}B`;
@@ -20,6 +15,7 @@ function formatSize(bytes: number): string {
 }
 
 export function UploadPanel() {
+  const { t } = useTranslation();
   const currentId = useWorkspaceStore((s) => s.currentId);
   const documents = useDocumentStore((s) => s.documents);
   const uploading = useDocumentStore((s) => s.uploading);
@@ -49,7 +45,7 @@ export function UploadPanel() {
   return (
     <div className="upload-panel">
       <div className="upload-panel-header">
-        <span>文档</span>
+        <span>{t('documents.title')}</span>
         <button className="panel-close" onClick={() => toggleSidebarPanel('doc')}>×</button>
       </div>
 
@@ -61,11 +57,11 @@ export function UploadPanel() {
           onChange={(e) => handleUpload(e.target.files?.[0])}
           disabled={uploading}
         />
-        {uploading && <p className="upload-hint">上传中…</p>}
+        {uploading && <p className="upload-hint">{t('documents.uploading')}</p>}
       </div>
 
       {documents.length === 0 && !uploading && (
-        <p className="upload-empty">上传 PDF/TXT，AI 自动摘要并生成知识卡片</p>
+        <p className="upload-empty">{t('documents.emptyHint')}</p>
       )}
 
       <ul className="doc-list">
@@ -76,23 +72,23 @@ export function UploadPanel() {
                 {doc.title || doc.fileName}
               </span>
               <span className="doc-meta">
-                {doc.fileName} · {formatSize(doc.sizeBytes)} · {STATUS_LABELS[doc.status]}
+                {doc.fileName} · {formatSize(doc.sizeBytes)} · {t('documents.status.' + doc.status)}
               </span>
               {doc.status === 'failed' && doc.error && (
-                <span className="doc-error">错误码：{doc.error}</span>
+                <span className="doc-error">{t('documents.errorCode', { code: doc.error })}</span>
               )}
             </div>
             <div className="doc-actions">
               {doc.status === 'failed' && (
-                <button onClick={() => retry(doc.id)}>重新摘要</button>
+                <button onClick={() => retry(doc.id)}>{t('documents.retry')}</button>
               )}
               <button
                 className="danger"
                 onClick={() => {
-                  if (confirm(`删除文档「${doc.fileName}」？关联卡片将保留。`)) remove(doc.id);
+                  if (confirm(t('documents.deleteConfirm', { name: doc.fileName }))) remove(doc.id);
                 }}
               >
-                删除
+                {t('common.delete')}
               </button>
             </div>
           </li>

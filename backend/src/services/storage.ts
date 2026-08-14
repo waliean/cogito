@@ -33,6 +33,7 @@ const DEFAULT_SETTINGS: Settings = {
   temperature: 0.7,
   timeoutMs: 60000,
   dictTermStyle: 'italic',
+  language: 'system',
 };
 
 const INITIAL_DB: DbSchema = {
@@ -109,6 +110,9 @@ function loadDb(): DbSchema {
       if (!Array.isArray(parsed.savedTerms)) {
         (parsed as DbSchema).savedTerms = [];
       }
+      // 迁移：旧 db.json 的 settings 缺新字段（如 language）时做浅合并补齐
+      const mergedSettings = { ...DEFAULT_SETTINGS, ...((parsed as DbSchema).settings ?? {}) };
+      (parsed as DbSchema).settings = mergedSettings;
       return parsed as DbSchema;
     }
     throw new Error('Invalid db schema');

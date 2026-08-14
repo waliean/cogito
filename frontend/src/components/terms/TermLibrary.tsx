@@ -6,6 +6,7 @@
 // ============================================================
 
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCardStore, useUIStore, useTermStore } from '../../state/store.js';
 
 interface TermEntry {
@@ -19,6 +20,7 @@ interface TermEntry {
 }
 
 export function TermLibrary() {
+  const { t } = useTranslation();
   const cards = useCardStore((s) => s.cards);
   const activeTerm = useUIStore((s) => s.activeTerm);
   const setActiveTerm = useUIStore((s) => s.setActiveTerm);
@@ -105,9 +107,9 @@ export function TermLibrary() {
   if (terms.length === 0) {
     return (
       <div className="term-library empty">
-        <span className="term-library-title">术语库</span>
+        <span className="term-library-title">{t('terms.libraryTitle')}</span>
         <p className="term-library-hint">
-          {searchQuery ? '没有匹配的术语' : '生成卡片后自动聚合术语'}
+          {searchQuery ? t('terms.noMatch') : t('terms.emptyHint')}
         </p>
       </div>
     );
@@ -115,46 +117,46 @@ export function TermLibrary() {
 
   return (
     <div className="term-library">
-      <span className="term-library-title">术语库</span>
-      <span className="term-library-hint">{terms.length} 个术语，点击可高亮全局</span>
+      <span className="term-library-title">{t('terms.libraryTitle')}</span>
+      <span className="term-library-hint">{t('terms.countHint', { count: terms.length })}</span>
 
       {/* 搜索框 */}
       <input
         className="term-library-search"
         type="text"
-        placeholder="搜索术语…"
+        placeholder={t('terms.searchPlaceholder')}
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
 
       <div className="term-library-list">
-        {terms.map((t) => {
-          const isSaved = savedSet.has(t.term.toLowerCase());
+        {terms.map((entry) => {
+          const isSaved = savedSet.has(entry.term.toLowerCase());
           return (
             <button
-              key={t.term}
-              className={`term-lib-item ${activeTerm === t.term ? 'active' : ''}`}
-              onClick={() => setActiveTerm(activeTerm === t.term ? null : t.term)}
-              onMouseEnter={() => setHoveredTerm(t.term)}
+              key={entry.term}
+              className={`term-lib-item ${activeTerm === entry.term ? 'active' : ''}`}
+              onClick={() => setActiveTerm(activeTerm === entry.term ? null : entry.term)}
+              onMouseEnter={() => setHoveredTerm(entry.term)}
               onMouseLeave={() => setHoveredTerm(null)}
             >
-              <span className="term-lib-name">{t.term}</span>
+              <span className="term-lib-name">{entry.term}</span>
               <span className="term-lib-meta">
-                {t.definition && <span className="term-lib-def">{t.definition}</span>}
-                <span className="term-lib-count">{t.count}</span>
+                {entry.definition && <span className="term-lib-def">{entry.definition}</span>}
+                <span className="term-lib-count">{entry.count}</span>
                 {!isSaved && (
                   <span
                     className="term-lib-save"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleSaveTerm(t);
+                      handleSaveTerm(entry);
                     }}
-                    title="保存到术语库"
+                    title={t('terms.saveToLibrary')}
                   >
                     💾
                   </span>
                 )}
-                {isSaved && <span className="term-lib-saved" title="已保存">✓</span>}
+                {isSaved && <span className="term-lib-saved" title={t('terms.saved')}>✓</span>}
               </span>
             </button>
           );
@@ -164,7 +166,7 @@ export function TermLibrary() {
       {/* 一键保存全部 */}
       {terms.some((t) => !savedSet.has(t.term.toLowerCase())) && (
         <button className="term-lib-save-all" onClick={handleSaveAll}>
-          一键保存全部未保存术语
+          {t('terms.saveAllUnsaved')}
         </button>
       )}
 
@@ -173,12 +175,12 @@ export function TermLibrary() {
         <div className="term-preview term-preview-enter">
           {hoveredData.definition && (
             <div className="term-preview-def">
-              <span className="term-preview-label">定义</span>
+              <span className="term-preview-label">{t('terms.definition')}</span>
               <p>{hoveredData.definition}</p>
             </div>
           )}
           <div className="term-preview-title">
-            出现在 {hoveredData.count} 张卡片：
+            {t('terms.appearsIn', { count: hoveredData.count })}
           </div>
           <ul className="term-preview-list">
             {hoveredData.cardTitles.slice(0, 5).map((title, i) => (
@@ -186,7 +188,7 @@ export function TermLibrary() {
             ))}
             {hoveredData.cardTitles.length > 5 && (
               <li className="term-preview-more">
-                …还有 {hoveredData.cardTitles.length - 5} 张
+                {t('terms.moreCards', { count: hoveredData.cardTitles.length - 5 })}
               </li>
             )}
           </ul>
@@ -194,7 +196,7 @@ export function TermLibrary() {
       )}
       {activeTerm && (
         <button className="term-clear" onClick={() => setActiveTerm(null)}>
-          清除高亮
+          {t('terms.clearHighlight')}
         </button>
       )}
     </div>

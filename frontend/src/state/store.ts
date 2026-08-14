@@ -23,6 +23,7 @@ import * as termApi from '../api/terms.js';
 import type { CreateCardInput, UpdateCardInput } from '../api/cards.js';
 import type { SettingsPatch } from '../api/settings.js';
 import { describeError } from '../utils/errorMessages.js';
+import { syncLanguage } from '../i18n/index.js';
 
 // ---- 宸ュ叿 ----
 
@@ -331,6 +332,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     try {
       const settings = await settingsApi.getSettings();
       set({ settings, error: null });
+      syncLanguage(settings.language);
     } catch (e: any) {
       set({ error: describeError(e) });
     }
@@ -341,6 +343,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     try {
       const settings = await settingsApi.updateSettings(patch);
       set({ settings });
+      syncLanguage(settings.language);
     } catch (e: any) {
       set({ error: describeError(e) });
       throw e;

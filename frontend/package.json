@@ -14,9 +14,11 @@
     "@cogito/shared": "*",
     "@xyflow/react": "^12.11.2",
     "dagre": "^0.8.5",
+    "i18next": "^26.3.6",
     "markdown-it": "^15.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-i18next": "^17.0.11",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

@@ -7,6 +7,7 @@ const { app, BrowserWindow, Tray, Menu, dialog, nativeImage, ipcMain, shell } = 
 const { spawn } = require('node:child_process');
 const path = require('node:path');
 const fs = require('node:fs');
+const { t, setLang, normalizeLocale } = require('./i18n.cjs');
 
 const isDev = !app.isPackaged;
 let backendProcess = null;
@@ -43,10 +44,12 @@ function dataDir() {
 
 async function main() {
   app.setName('Cogito');
+  // 渲染进程起来前，用系统 locale 兜底（app ready 后 getLocale 才稳定）
+  setLang(normalizeLocale(app.getLocale()));
 
   const port = await startBackend();
   if (!port) {
-    dialog.showErrorBox('启动失败', '后端服务未能启动，请查看日志或重新安装。');
+    dialog.showErrorBox(t('startupFailedTitle'), t('startupFailedDetail'));
     app.quit();
     return;
   }
@@ -60,7 +63,7 @@ function startBackend() {
   return new Promise((resolve) => {
     const entry = backendEntry();
     if (!fs.existsSync(entry)) {
-      dialog.showErrorBox('启动失败', `后端入口不存在: ${entry}`);
+      dialog.showErrorBox(t('backendEntryMissingTitle'), t('backendEntryMissingDetail', { entry }));
       resolve(null);
       return;
     }
@@ -121,7 +124,7 @@ function startBackend() {
         resolve(null);
       }
       if (code !== 0 && !quitting && mainWindow) {
-        dialog.showErrorBox('后端异常退出', `后端服务异常退出（code ${code}）。`);
+        dialog.showErrorBox(t('backendExitedTitle'), t('backendExitedDetail', { code }));
       }
     });
 
@@ -147,7 +150,7 @@ ipcMain.handle('open-data-dir', async () => {
 ipcMain.handle('select-folder', async () => {
   const result = await dialog.showOpenDialog({
     properties: ['openDirectory'],
-    title: '选择文件夹作为工作区',
+    title: t('selectFolderTitle'),
   });
   if (result.canceled || result.filePaths.length === 0) {
     return null;
@@ -162,6 +165,13 @@ ipcMain.handle('open-file', async (_event, filePath) => {
   } catch { /* silent */ }
 });
 
+// 渲染进程同步语言：立即生效于托盘/窗口标题
+ipcMain.handle('set-language', (_event, lang) => {
+  setLang(lang);
+  rebuildTray();
+  mainWindow?.setTitle(t('windowTitle'));
+});
+
 // ---- 窗口 ----
 function createWindow(port) {
   const preloadPath = path.join(app.getAppPath(), 'electron', 'preload.cjs');
@@ -171,7 +181,7 @@ function createWindow(port) {
     height: 900,
     minWidth: 960,
     minHeight: 600,
-    title: 'Cogito — AI 知识卡片探索',
+    title: t('windowTitle'),
     backgroundColor: '#101010',
     icon: path.join(app.getAppPath(), 'electron', 'assets', 'icon.png'),
     webPreferences: {
@@ -203,6 +213,20 @@ function createWindow(port) {
 }
 
 // ---- 托盘 ----
+function buildTrayMenu() {
+  return Menu.buildFromTemplate([
+    { label: t('trayShow'), click: () => { mainWindow?.show(); mainWindow?.focus(); } },
+    { type: 'separator' },
+    { label: t('trayQuit'), click: () => { quitting = true; app.quit(); } },
+  ]);
+}
+
+function rebuildTray() {
+  if (!tray) return;
+  tray.setContextMenu(buildTrayMenu());
+  tray.setToolTip(t('trayTooltip'));
+}
+
 function createTray() {
   const iconPath = path.join(app.getAppPath(), 'electron', 'assets', 'icon.png');
   let icon;
@@ -213,14 +237,7 @@ function createTray() {
     icon = nativeImage.createEmpty();
   }
   tray = new Tray(icon);
-  tray.setToolTip('Cogito — AI 知识卡片探索');
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      { label: '显示主窗口', click: () => { mainWindow?.show(); mainWindow?.focus(); } },
-      { type: 'separator' },
-      { label: '退出', click: () => { quitting = true; app.quit(); } },
-    ]),
-  );
+  rebuildTray();
   tray.on('click', () => {
     mainWindow?.show();
     mainWindow?.focus();

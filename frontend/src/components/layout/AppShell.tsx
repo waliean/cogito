@@ -3,6 +3,7 @@
 // ============================================================
 
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useWorkspaceStore } from '../../state/store.js';
 import { useUIStore } from '../../state/store.js';
 import { useDocumentStore } from '../../state/store.js';
@@ -18,6 +19,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const { t } = useTranslation();
   const currentId = useWorkspaceStore((s) => s.currentId);
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const currentWs = workspaces.find((w) => w.id === currentId);
@@ -36,9 +38,9 @@ export function AppShell({ children }: AppShellProps) {
   }, [currentId]);
 
   const views: { key: ViewMode; label: string }[] = [
-    { key: 'cards', label: '卡片' },
-    { key: 'mindscape', label: '导图' },
-    { key: 'glossary', label: '术语库' },
+    { key: 'cards', label: t('nav.cards') },
+    { key: 'mindscape', label: t('nav.mindscape') },
+    { key: 'glossary', label: t('nav.glossary') },
   ];
 
   return (
@@ -61,7 +63,7 @@ export function AppShell({ children }: AppShellProps) {
             className="topbar-btn"
             onClick={() => setSettingsOpen(true)}
           >
-            设置
+            {t('nav.settings')}
           </button>
         </nav>
       </header>
@@ -71,13 +73,13 @@ export function AppShell({ children }: AppShellProps) {
             className={`sidebar-btn ${sidebarPanel === 'file' ? 'active' : ''}`}
             onClick={() => toggleSidebarPanel('file')}
           >
-            文件
+            {t('files.title')}
           </button>
           <button
             className={`sidebar-btn ${sidebarPanel === 'doc' ? 'active' : ''}`}
             onClick={() => toggleSidebarPanel('doc')}
           >
-            文档
+            {t('documents.title')}
           </button>
           <TermLibrary />
         </aside>

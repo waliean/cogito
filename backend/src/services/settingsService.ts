@@ -4,7 +4,7 @@
 //   X-API-Key 请求头（req.aiApiKey） > settings.apiKey > env DEEPSEEK_API_KEY
 // ============================================================
 
-import type { PublicSettings, Settings, TermDictStyle } from '@cogito/shared';
+import type { PublicSettings, Settings, TermDictStyle, LanguagePreference } from '@cogito/shared';
 import { getState, mutate } from './storage.js';
 import { appError } from './cardService.js';
 import { ErrorCode } from '@cogito/shared';
@@ -20,6 +20,10 @@ function envApiKey(): string | undefined {
   return key && key.trim() ? key.trim() : undefined;
 }
 
+function normalizeLanguage(l: unknown): LanguagePreference {
+  return l === 'system' || l === 'zh' || l === 'en' ? l : 'system';
+}
+
 function toPublic(s: Settings): PublicSettings {
   return {
     hasApiKey: !!s.apiKey || !!envApiKey(),
@@ -28,6 +32,7 @@ function toPublic(s: Settings): PublicSettings {
     temperature: s.temperature,
     timeoutMs: s.timeoutMs,
     dictTermStyle: s.dictTermStyle || DEFAULT_DICT_TERM_STYLE,
+    language: normalizeLanguage(s.language),
   };
 }
 
@@ -63,7 +68,7 @@ export function hasApiKeyConfigured(): boolean {
  * - temperature 钳制 [0, 2]；timeoutMs 钳制 [5000, 300000]
  */
 export async function updateSettings(
-  patch: Partial<Pick<Settings, 'apiKey' | 'baseUrl' | 'model' | 'temperature' | 'timeoutMs' | 'dictTermStyle'>>,
+  patch: Partial<Pick<Settings, 'apiKey' | 'baseUrl' | 'model' | 'temperature' | 'timeoutMs' | 'dictTermStyle' | 'language'>>,
 ): Promise<PublicSettings> {
   return mutate((db) => {
     const s = db.settings;
@@ -98,6 +103,13 @@ export async function updateSettings(
         throw appError(ErrorCode.VALIDATION, 'dictTermStyle must be italic|bold|underline');
       }
       s.dictTermStyle = patch.dictTermStyle;
+    }
+
+    if (patch.language !== undefined) {
+      if (!['system', 'zh', 'en'].includes(patch.language)) {
+        throw appError(ErrorCode.VALIDATION, 'language must be system|zh|en');
+      }
+      s.language = patch.language;
     }
 
     return toPublic(s);

@@ -24,8 +24,8 @@ router.get('/', (_req, res) => {
 // PUT /api/settings
 router.put('/', async (req, res, next) => {
   try {
-    const { apiKey, baseUrl, model, temperature, timeoutMs, dictTermStyle } = req.body ?? {};
-    const settings = await updateSettings({ apiKey, baseUrl, model, temperature, timeoutMs, dictTermStyle });
+    const { apiKey, baseUrl, model, temperature, timeoutMs, dictTermStyle, language } = req.body ?? {};
+    const settings = await updateSettings({ apiKey, baseUrl, model, temperature, timeoutMs, dictTermStyle, language });
     res.json({ settings });
   } catch (err) {
     next(err);

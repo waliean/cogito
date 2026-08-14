@@ -3,10 +3,13 @@
 // ============================================================
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { LanguagePreference } from '@cogito/shared';
 import { useSettingsStore, useUIStore } from '../../state/store.js';
 import { getDataPath } from '../../api/settings.js';
 
 export function SettingsPanel() {
+  const { t } = useTranslation();
   const settings = useSettingsStore((s) => s.settings);
   const testing = useSettingsStore((s) => s.testing);
   const lastTest = useSettingsStore((s) => s.lastTest);
@@ -21,6 +24,7 @@ export function SettingsPanel() {
   const [temperature, setTemperature] = useState(0.7);
   const [timeoutMs, setTimeoutMs] = useState(60000);
   const [dictTermStyle, setDictTermStyle] = useState<'italic' | 'bold' | 'underline'>('italic');
+  const [language, setLanguage] = useState<LanguagePreference>('system');
   const [saved, setSaved] = useState(false);
   const [dataPath, setDataPath] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -32,6 +36,7 @@ export function SettingsPanel() {
       setTemperature(settings.temperature);
       setTimeoutMs(settings.timeoutMs);
       setDictTermStyle(settings.dictTermStyle ?? 'italic');
+      setLanguage(settings.language ?? 'system');
     }
   }, [settings]);
 
@@ -39,12 +44,13 @@ export function SettingsPanel() {
     setSaved(false);
     try {
       await save({
-        apiKey,
+        ...(apiKey.trim() ? { apiKey: apiKey.trim() } : {}),
         baseUrl,
         model,
         temperature,
         timeoutMs,
         dictTermStyle,
+        language,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -58,25 +64,25 @@ export function SettingsPanel() {
       if (e.target === e.currentTarget) setSettingsOpen(false);
     }}>
       <div className="settings-panel">
-        <h3>AI 设置</h3>
+        <h3>{t('settings.title')}</h3>
         {error && <div className="ws-error">{error}</div>}
 
         <label className="settings-label">
-          API Key
+          {t('settings.apiKeyLabel')}
           <input
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder={settings?.hasApiKey ? '已配置（留空保持不变）' : 'sk-...'}
+            placeholder={settings?.hasApiKey ? t('settings.apiKeyConfiguredPlaceholder') : 'sk-...'}
             autoComplete="off"
           />
         </label>
         <p className="settings-hint">
-          保存到本机 db.json，仅用于调用 DeepSeek，不会展示明文。
+          {t('settings.apiKeyHint')}
         </p>
 
         <label className="settings-label">
-          Base URL
+          {t('settings.baseUrlLabel')}
           <input
             type="text"
             value={baseUrl}
@@ -85,7 +91,7 @@ export function SettingsPanel() {
         </label>
 
         <label className="settings-label">
-          模型
+          {t('settings.modelLabel')}
           <input
             type="text"
             value={model}
@@ -96,7 +102,7 @@ export function SettingsPanel() {
 
         <div className="settings-row">
           <label className="settings-label">
-            温度
+            {t('settings.temperatureLabel')}
             <input
               type="number"
               min={0}
@@ -107,7 +113,7 @@ export function SettingsPanel() {
             />
           </label>
           <label className="settings-label">
-            超时(ms)
+            {t('settings.timeoutLabel')}
             <input
               type="number"
               min={5000}
@@ -119,7 +125,7 @@ export function SettingsPanel() {
         </div>
 
         <div className="settings-dict-style">
-          <span className="settings-label">词典术语突出样式</span>
+          <span className="settings-label">{t('settings.dictStyleLabel')}</span>
           <div className="settings-dict-style-options">
             {(['italic', 'bold', 'underline'] as const).map((style) => (
               <label key={style} className="settings-dict-style-option">
@@ -131,8 +137,30 @@ export function SettingsPanel() {
                   onChange={(e) => setDictTermStyle(e.target.value as any)}
                 />
                 <span className={`term-dict term-dict-${style}`}>
-                  {style === 'italic' ? '斜体' : style === 'bold' ? '加粗' : '下划线'}
+                  {style === 'italic'
+                    ? t('settings.dictStyleItalic')
+                    : style === 'bold'
+                      ? t('settings.dictStyleBold')
+                      : t('settings.dictStyleUnderline')}
                 </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="settings-dict-style">
+          <span className="settings-label">{t('settings.language.label')}</span>
+          <div className="settings-dict-style-options">
+            {(['system', 'zh', 'en'] as const).map((l) => (
+              <label key={l} className="settings-dict-style-option">
+                <input
+                  type="radio"
+                  name="language"
+                  value={l}
+                  checked={language === l}
+                  onChange={(e) => setLanguage(e.target.value as LanguagePreference)}
+                />
+                <span>{t(`settings.language.${l}`)}</span>
               </label>
             ))}
           </div>
@@ -140,29 +168,29 @@ export function SettingsPanel() {
 
         <div className="settings-actions">
           <button onClick={handleSave} disabled={testing}>
-            {saved ? '已保存' : '保存'}
+            {saved ? t('settings.saved') : t('common.save')}
           </button>
           <button
             className="secondary"
             onClick={() => test().catch(() => {})}
             disabled={testing}
           >
-            {testing ? '测试中...' : '测试连接'}
+            {testing ? t('settings.testing') : t('settings.test')}
           </button>
         </div>
 
         {lastTest && (
           <div className="settings-test-result">
-            连接成功：{lastTest.model} · {lastTest.latencyMs}ms
+            {t('settings.testResult', { model: lastTest.model, latencyMs: lastTest.latencyMs })}
           </div>
         )}
 
         <div className="settings-divider" />
 
         <div className="settings-data-section">
-          <span className="settings-data-label">数据目录</span>
+          <span className="settings-data-label">{t('settings.dataDirLabel')}</span>
           <p className="settings-data-hint">
-            存储 db.json 与上传文档的本地文件夹
+            {t('settings.dataDirHint')}
           </p>
           <div className="settings-data-row">
             <button
@@ -182,7 +210,7 @@ export function SettingsPanel() {
                     const res = await getDataPath();
                     setDataPath(res.path);
                   } catch {
-                    setDataPath('无法获取路径');
+                    setDataPath(t('settings.getPathFailed'));
                   }
                 }
                 const path = dataPath || (await getDataPath()).path;
@@ -195,7 +223,7 @@ export function SettingsPanel() {
                 }
               }}
             >
-              {copied ? '已复制路径' : '打开数据文件夹'}
+              {copied ? t('settings.copyPath') : t('settings.openDataDir')}
             </button>
           </div>
           {dataPath && (

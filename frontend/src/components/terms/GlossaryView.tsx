@@ -4,6 +4,7 @@
 // ============================================================
 
 import { useEffect, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTermStore, useWorkspaceStore, useUIStore } from '../../state/store.js';
 import { useCardStore } from '../../state/store.js';
 
@@ -21,6 +22,7 @@ interface TermGroup {
 }
 
 export function GlossaryView({ standalone }: GlossaryViewProps) {
+  const { t, i18n } = useTranslation();
   const { savedTerms, loading, load, remove } = useTermStore();
   const workspaces = useWorkspaceStore((s) => s.workspaces);
   const cards = useCardStore((s) => s.cards);
@@ -29,6 +31,8 @@ export function GlossaryView({ standalone }: GlossaryViewProps) {
   const [workspaceFilter, setWorkspaceFilter] = useState<string>('');
   const [confirmDeleteTerm, setConfirmDeleteTerm] = useState<string | null>(null);
   const [expandedTerms, setExpandedTerms] = useState<Set<string>>(new Set());
+
+  const dateLocale = i18n.language === 'zh' ? 'zh-CN' : 'en-US';
 
   // workspace名称映射
   const wsNameMap = useMemo(() => {
@@ -109,18 +113,18 @@ export function GlossaryView({ standalone }: GlossaryViewProps) {
       <div className="glossary-header">
         {standalone && (
           <button className="glossary-back-btn" onClick={() => setView('cards')}>
-            &larr; 返回工作区列表
+            &larr; {t('common.backToWorkspaces')}
           </button>
         )}
-        <h2>专业名词库</h2>
-        <p className="glossary-desc">已保存的术语及解释，支持按关键词和工作区筛选</p>
+        <h2>{t('terms.glossaryTitle')}</h2>
+        <p className="glossary-desc">{t('terms.glossaryDesc')}</p>
       </div>
 
       <div className="glossary-filters">
         <input
           className="glossary-search"
           type="text"
-          placeholder="搜索术语或定义…"
+          placeholder={t('terms.glossarySearchPlaceholder')}
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
         />
@@ -129,20 +133,20 @@ export function GlossaryView({ standalone }: GlossaryViewProps) {
           value={workspaceFilter}
           onChange={(e) => setWorkspaceFilter(e.target.value)}
         >
-          <option value="">全部工作区</option>
+          <option value="">{t('terms.allWorkspaces')}</option>
           {workspaces.map((ws) => (
             <option key={ws.id} value={ws.id}>{ws.name}</option>
           ))}
         </select>
       </div>
 
-      {loading && <div className="glossary-loading">加载中…</div>}
+      {loading && <div className="glossary-loading">{t('common.loading')}</div>}
 
       {!loading && groups.length === 0 && (
         <div className="glossary-empty">
           {keyword || workspaceFilter
-            ? '没有匹配的术语'
-            : '还没有保存任何术语。'}
+            ? t('terms.noMatch')
+            : t('terms.glossaryEmpty')}
         </div>
       )}
 
@@ -157,31 +161,31 @@ export function GlossaryView({ standalone }: GlossaryViewProps) {
               <div key={g.key} className="glossary-group">
                 <div className="glossary-group-header">
                   <span className="glossary-item-term">{g.name}</span>
-                  <span className="glossary-group-count">{g.entries.length} 个释义</span>
+                  <span className="glossary-group-count">{t('terms.definitionCount', { count: g.entries.length })}</span>
                 </div>
 
                 {visible.map((entry) => {
-                  const wsName = wsNameMap.get(entry.workspaceId) || '未知工作区';
+                  const wsName = wsNameMap.get(entry.workspaceId) || t('terms.unknownWorkspace');
                   return (
                     <div key={entry.id} className="glossary-item">
                       <div className="glossary-item-def">{entry.definition}</div>
                       <div className="glossary-item-meta">
-                        <span>项目：{wsName}</span>
-                        {entry.sourceCardTitle && <span>来源：{entry.sourceCardTitle}</span>}
-                        <span>保存于：{new Date(entry.savedAt).toLocaleString('zh-CN')}</span>
+                        <span>{t('terms.project', { name: wsName })}</span>
+                        {entry.sourceCardTitle && <span>{t('terms.source', { title: entry.sourceCardTitle })}</span>}
+                        <span>{t('terms.savedAt', { date: new Date(entry.savedAt).toLocaleString(dateLocale) })}</span>
                       </div>
                       <button
                         className="glossary-item-delete"
                         onClick={() => setConfirmDeleteTerm(entry.id)}
-                        title="删除此释义"
+                        title={t('terms.deleteDefinition')}
                       >
                         ✕
                       </button>
                       {confirmDeleteTerm === entry.id && (
                         <div className="glossary-delete-confirm">
-                          <span>确定删除此释义？</span>
-                          <button className="glossary-confirm-yes" onClick={() => handleDelete(entry.id)}>删除</button>
-                          <button className="glossary-confirm-no" onClick={() => setConfirmDeleteTerm(null)}>取消</button>
+                          <span>{t('terms.deleteConfirm')}</span>
+                          <button className="glossary-confirm-yes" onClick={() => handleDelete(entry.id)}>{t('common.delete')}</button>
+                          <button className="glossary-confirm-no" onClick={() => setConfirmDeleteTerm(null)}>{t('common.cancel')}</button>
                         </div>
                       )}
                     </div>
@@ -194,8 +198,8 @@ export function GlossaryView({ standalone }: GlossaryViewProps) {
                     onClick={() => toggleExpand(g.key)}
                   >
                     {isExpanded
-                      ? `收起其他释义`
-                      : `展开其他 ${g.entries.length - 1} 个释义`}
+                      ? t('terms.collapseOthers')
+                      : t('terms.expandOthers', { count: g.entries.length - 1 })}
                   </button>
                 )}
               </div>
@@ -206,30 +210,30 @@ export function GlossaryView({ standalone }: GlossaryViewProps) {
 
       {unsavedTerms.length > 0 && (
         <div className="glossary-unsaved-section">
-          <h3>未保存的术语（来自卡片）</h3>
+          <h3>{t('terms.unsavedSection')}</h3>
           <div className="glossary-unsaved-list">
-            {unsavedTerms.map((t) => (
-              <div key={t.term} className="glossary-unsaved-item">
-                <span className="glossary-unsaved-term">{t.term}</span>
-                {t.definition && <span className="glossary-unsaved-def">{t.definition}</span>}
-                <span className="glossary-unsaved-count">{t.count} 张卡片</span>
+            {unsavedTerms.map((ut) => (
+              <div key={ut.term} className="glossary-unsaved-item">
+                <span className="glossary-unsaved-term">{ut.term}</span>
+                {ut.definition && <span className="glossary-unsaved-def">{ut.definition}</span>}
+                <span className="glossary-unsaved-count">{t('terms.cardCount', { count: ut.count })}</span>
                 <button
                   className="glossary-unsaved-save"
                   onClick={async () => {
                     const wsId = cards.find((c) =>
-                      c.terms?.some((ct) => ct.term === t.term),
+                      c.terms?.some((ct) => ct.term === ut.term),
                     )?.workspaceId;
                     if (wsId) {
                       await useTermStore.getState().save({
-                        term: t.term,
-                        definition: t.definition || '',
+                        term: ut.term,
+                        definition: ut.definition || '',
                         workspaceId: wsId,
-                        sourceCardTitle: t.cardTitle,
+                        sourceCardTitle: ut.cardTitle,
                       });
                     }
                   }}
                 >
-                  保存
+                  {t('terms.save')}
                 </button>
               </div>
             ))}
@@ -248,7 +252,7 @@ export function GlossaryView({ standalone }: GlossaryViewProps) {
               }
             }}
           >
-            一键保存全部 ({unsavedTerms.length})
+            {t('terms.saveAll', { count: unsavedTerms.length })}
           </button>
         </div>
       )}

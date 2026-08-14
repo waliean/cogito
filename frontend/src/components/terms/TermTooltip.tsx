@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { useTermStore } from '../../state/store.js';
 
 /* ========== 类型定义 ========== */
@@ -189,6 +190,7 @@ function TooltipPortal({
     sourceCardTitle?: string;
   }) => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
   const [adjusted, setAdjusted] = useState<TooltipPosition>(inst.adjusted);
   const [pinned, setPinned] = useState(inst.pinned);
@@ -319,7 +321,7 @@ function TooltipPortal({
         <button
           className={`term-tooltip-btn ${pinned ? 'active' : ''}`}
           onClick={handlePin}
-          title={pinned ? '取消固定' : '固定此弹窗'}
+          title={pinned ? t('terms.tooltipUnpin') : t('terms.tooltipPin')}
         >
           {pinned ? '📌' : '📍'}
         </button>
@@ -328,9 +330,9 @@ function TooltipPortal({
             className="term-tooltip-btn"
             onClick={handleSave}
             disabled={isSaved}
-            title={isSaved ? '已保存' : '保存术语到库'}
+            title={isSaved ? t('terms.saved') : t('terms.tooltipSaveTerm')}
           >
-            {isSaved ? '✓ 已保存' : '💾 保存'}
+            {isSaved ? `✓ ${t('terms.saved')}` : `💾 ${t('terms.save')}`}
           </button>
         )}
       </div>
